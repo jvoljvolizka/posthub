@@ -1,0 +1,29 @@
+{{ define "title"}}<title>Example</title>{{ end }}
+{{ define "content" }}
+    <ul>
+        <li><a href="/bang">Start</a></li>
+        {{ if .github_user }}
+            <li><a href="/destroy-session">Logout</a></li>
+        {{ end }}
+    </ul>
+    <div class="current-user">
+        {{ if .github_user }}
+
+        <form action="/sendpost.php" method="post">
+
+            <input  type="text" name="title" value="Mike potatoson" />
+
+            <div class="margin-top">
+                <textarea name="body" placeholder="Oh hey jvol i really really hate you when will you die ? You know i want to be ready for your funeral it will be soo fucking fun anyways be safe and die soon !!"></textarea>
+            </div>
+            <button type="submit">Send!</button>
+        </form>
+
+
+        {{ else }}
+            <h3>Not logged in as anyone</h3>
+        {{ end }}
+    </div>
+</div>
+
+{{ end }}

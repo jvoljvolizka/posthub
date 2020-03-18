@@ -1,0 +1,17 @@
+{{ define "base" }}
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    {{template "title" . }}
+</head>
+<body>
+    <header>
+        <h1>Github powered blog system </h1>
+    </header>
+    <div id="page">
+        {{ template "content" . }}
+    </div>
+</body>
+</html>
+{{ end }}
