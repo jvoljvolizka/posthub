@@ -26,8 +26,8 @@ type Config struct {
 }
 
 const (
-	defaultLayout = "~/templates/layout.html"
-	templateDir   = "~/templates/"
+	defaultLayout = "/app/templates/layout.html"
+	templateDir   = "/app/templates/"
 
 	githubAuthorizeUrl = "https://github.com/login/oauth/authorize"
 	githubTokenUrl     = "https://github.com/login/oauth/access_token"
