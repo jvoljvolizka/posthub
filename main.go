@@ -26,18 +26,17 @@ type Config struct {
 }
 
 const (
-	defaultLayout = "/app/templates/layout.html"
-	templateDir   = "/app/templates/"
-
 	githubAuthorizeUrl = "https://github.com/login/oauth/authorize"
 	githubTokenUrl     = "https://github.com/login/oauth/access_token"
 	redirectUrl        = ""
 )
 
 var (
-	oauthCfg *oauth2.Config
-	store    *sessions.CookieStore
-	Conf     Config
+	defaultLayout string
+	templateDir   string
+	oauthCfg      *oauth2.Config
+	store         *sessions.CookieStore
+	Conf          Config
 	// scopes
 	scopes = []string{"repo", "user", "delete_repo"}
 
@@ -211,6 +210,8 @@ func init() {
 }
 
 func main() {
+	defaultLayout = os.Getenv("POSTHUB_BASE") + "/templates/layout.html"
+	templateDir = os.Getenv("POSTHUB_BASE") + "/templates/"
 	//set template stuff
 	tmpls["home.html"] = template.Must(template.ParseFiles(templateDir+"home.html", defaultLayout))
 
