@@ -88,6 +88,20 @@ func start(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, 302)
 }
 
+func logout(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, sessionStoreKey)
+	if err != nil {
+		fmt.Fprintln(w, "aborted")
+		return
+	}
+
+	session.Options.MaxAge = -1
+
+	session.Save(r, w)
+	http.Redirect(w, r, "/", 302)
+
+}
+
 func callback(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessionStoreKey)
 	if err != nil {
@@ -241,6 +255,7 @@ func main() {
 	r.HandleFunc("/bang.php", start)
 	r.HandleFunc("/callback.php", callback)
 	r.HandleFunc("/sendpost.php", post)
+	r.HandleFunc("/logout.php", logout)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.Handle("/", r)
 
