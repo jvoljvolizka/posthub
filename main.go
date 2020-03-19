@@ -144,6 +144,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		ctx := context.Background()
 		body := r.FormValue("body")
+		//title := r.FormValue("title")
 		content := []byte(body)
 
 		client := github.NewClient(oauthCfg.Client(oauth2.NoContext, accessToken))
@@ -199,7 +200,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Fprintln(w, "<h1> Cool Cool </h1>")
+		http.Redirect(w, r, "/", 302)
 
 	}
 
@@ -236,8 +237,8 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
-	r.HandleFunc("/bang", start)
-	r.HandleFunc("/auth-callback", callback)
+	r.HandleFunc("/bang.php", start)
+	r.HandleFunc("/callback.php", callback)
 	r.HandleFunc("/sendpost.php", post)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.Handle("/", r)
