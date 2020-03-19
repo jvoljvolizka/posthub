@@ -246,7 +246,7 @@ func main() {
 	//default port
 	listenAddr := ":8080"
 
-	envPort := os.Getenv("PORT")
+	envPort := os.Getenv("POSTHUB_PORT")
 	if len(envPort) > 0 {
 		listenAddr = ":" + envPort
 	}
