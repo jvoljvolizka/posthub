@@ -1,1 +1,1 @@
-posthub: bin/posthub
+web: bin/posthub
