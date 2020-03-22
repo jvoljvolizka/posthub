@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/gob"
 	"fmt"
@@ -157,8 +158,9 @@ func post(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		ctx := context.Background()
 		body := r.FormValue("body")
-		//title := r.FormValue("title")
+		title := r.FormValue("title")
 		content := []byte(body)
+		tit := []byte(title)
 
 		client := github.NewClient(oauthCfg.Client(oauth2.NoContext, accessToken))
 		_, _, err = client.Repositories.CreateFork(ctx, Conf.PostUser, Conf.PostRepo, nil)
@@ -174,15 +176,35 @@ func post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		hash := sha1.New()
+		hash.Write(tit)
+		st := hash.Sum(nil)
+		last := fmt.Sprintf("%x", st)
+
 		opts := &github.RepositoryContentFileOptions{
-			Message: github.String("git-blog test 1 "),
+			Message: github.String(title),
+			Content: tit,
+			Branch:  github.String("master"),
+			//	Author:    &github.CommitAuthor{Name: user.Name, Email: user.Email, Login: user.Login},
+			//	Committer: &github.CommitAuthor{Name: user.Name, Email: user.Email, Login: user.Login},
+		}
+
+		_, _, err = client.Repositories.CreateFile(ctx, user.GetLogin(), Conf.PostRepo, last+"/TITLE.md", opts)
+
+		if err != nil {
+			fmt.Fprintln(w, err)
+			return
+		}
+
+		opts = &github.RepositoryContentFileOptions{
+			Message: github.String(title),
 			Content: content,
 			Branch:  github.String("master"),
 			//	Author:    &github.CommitAuthor{Name: user.Name, Email: user.Email, Login: user.Login},
 			//	Committer: &github.CommitAuthor{Name: user.Name, Email: user.Email, Login: user.Login},
 		}
 
-		_, _, err = client.Repositories.CreateFile(ctx, user.GetLogin(), Conf.PostRepo, "dicksickle/README.md", opts)
+		_, _, err = client.Repositories.CreateFile(ctx, user.GetLogin(), Conf.PostRepo, last+"/README.md", opts)
 
 		if err != nil {
 			fmt.Fprintln(w, err)
@@ -190,10 +212,10 @@ func post(w http.ResponseWriter, r *http.Request) {
 		}
 
 		newPR := &github.NewPullRequest{
-			Title:               github.String("Fully Automated Luxury Gay Space Communism"),
+			Title:               github.String("New post by " + user.GetLogin()),
 			Head:                github.String(fmt.Sprintf("%s:master", user.GetLogin())),
 			Base:                github.String("master"),
-			Body:                github.String("Fully Automated Luxury Gay Space Communism"),
+			Body:                github.String(title),
 			MaintainerCanModify: github.Bool(true),
 		}
 
