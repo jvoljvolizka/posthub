@@ -38,7 +38,7 @@ var (
 	oauthCfg      *oauth2.Config
 	store         *sessions.CookieStore
 	Conf          Config
-	// scopes
+	// scopes we obv need repo but user for getting username and creating hash delete_repo for you know deleting the repo after pr because people are idiots
 	scopes = []string{"repo", "user", "delete_repo"}
 
 	tmpls = map[string]*template.Template{}
@@ -46,7 +46,7 @@ var (
 	sessionStoreKey = "PHPSESSID"
 )
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
+func index(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessionStoreKey)
 
 	if err != nil {
@@ -103,6 +103,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//callback stuff and checking token
 func callback(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, sessionStoreKey)
 	if err != nil {
@@ -159,12 +160,14 @@ func post(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 		body := r.FormValue("body")
 		title := r.FormValue("title")
+
 		content := []byte(body)
 		tit := []byte(title)
 
 		client := github.NewClient(oauthCfg.Client(oauth2.NoContext, accessToken))
 		_, _, err = client.Repositories.CreateFork(ctx, Conf.PostUser, Conf.PostRepo, nil)
 
+		//it can take a while maybe i can put a sleep but for now just ignore it
 		if _, oki := err.(*github.AcceptedError); oki {
 			log.Println("scheduled on GitHub side")
 		}
@@ -176,11 +179,13 @@ func post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//create a hash for directory name
 		hash := sha1.New()
-		hash.Write(tit)
+		hash.Write([]byte(user.GetName() + title))
 		st := hash.Sum(nil)
 		last := fmt.Sprintf("%x", st)
 
+		//first create title file
 		opts := &github.RepositoryContentFileOptions{
 			Message: github.String(title),
 			Content: tit,
@@ -204,6 +209,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 			//	Committer: &github.CommitAuthor{Name: user.Name, Email: user.Email, Login: user.Login},
 		}
 
+		//now content
 		_, _, err = client.Repositories.CreateFile(ctx, user.GetLogin(), Conf.PostRepo, last+"/README.md", opts)
 
 		if err != nil {
@@ -273,7 +279,8 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler)
+	r.HandleFunc("/", index)
+	//they are .php because
 	r.HandleFunc("/bang.php", start)
 	r.HandleFunc("/callback.php", callback)
 	r.HandleFunc("/sendpost.php", post)
